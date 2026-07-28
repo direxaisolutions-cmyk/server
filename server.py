@@ -21,18 +21,25 @@ def verify_proxy():
     if request.method == 'OPTIONS':
         return Response(status=200)
     
-    auth_header = request.headers.get('Authorization', '')
+    api_key = request.headers.get('x-api-key', '')
+    if not api_key:
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            api_key = auth_header.split(' ')[1]
+        else:
+            api_key = auth_header
+
     payload = request.get_data()
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': auth_header,
-        'User-Agent': 'CheckEtVerifierProxy/1.0'
+        'x-api-key': api_key,
+        'User-Agent': 'VerifyEtVerifierProxy/1.0'
     }
     
     try:
         resp = requests.post(
-            'https://api.check.et/api/v1/verify',
+            'https://verify.et/api/verify',
             data=payload,
             headers=headers,
             timeout=15
@@ -51,5 +58,5 @@ def verify_proxy():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    print(f"Starting Check.et Payment Proxy Server on http://0.0.0.0:{port}")
+    print(f"Starting Verify.et Payment Proxy Server on http://0.0.0.0:{port}")
     app.run(host='0.0.0.0', port=port, debug=False)

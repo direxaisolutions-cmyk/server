@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Check.et Payment Verifier | Commercial Bank of Ethiopia</title>
-  <meta name="description" content="Verify Ethiopian Bank payment transactions and receipts using the official Check.et API.">
+  <title>Verify.et Payment Verifier | Commercial Bank of Ethiopia</title>
+  <meta name="description" content="Verify Ethiopian Bank payment transactions and receipts using the official Verify.et API.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -638,7 +638,7 @@
     <!-- Header -->
     <header class="header">
       <div class="brand-badge">
-        <span class="dot"></span> Check.et Official Verification API
+        <span class="dot"></span> Verify.et Official Verification API
       </div>
       <h1>CBE Payment Verifier</h1>
       <p>Verify Commercial Bank of Ethiopia payments directly using official transaction references or receipt URLs.</p>
@@ -649,10 +649,10 @@
       <div class="api-bar">
         <label for="apiKeyInput">
           <span>API Key Authorization</span>
-          <span style="color: #10b981; font-weight: 500; font-size: 0.775rem;">Connected to check.et</span>
+          <span style="color: #10b981; font-weight: 500; font-size: 0.775rem;">Connected to verify.et</span>
         </label>
         <div class="input-wrapper">
-          <input type="password" id="apiKeyInput" value="chk_WCKdCOPQXmDq69f31fTdWJHJl5TujRZKqvzHLqxQ" placeholder="chk_..." autocomplete="off">
+          <input type="password" id="apiKeyInput" value="VERIFY_BANK_ET_zPNYhmxU7kRd2yBZrKE5C7MjsRlkHODag5Su9kvIcQOszijAVuO37sgqUVLnznGv" placeholder="VERIFY_BANK_ET_..." autocomplete="off">
           <button type="button" class="toggle-btn" id="toggleApiKey" title="Toggle visibility">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -685,7 +685,6 @@
             <label for="bankSelect">Bank Provider</label>
             <select id="bankSelect" class="form-control">
               <option value="cbe" selected>Commercial Bank of Ethiopia (CBE)</option>
-              <option value="amhara">Amhara Bank</option>
               <option value="telebirr">Telebirr</option>
               <option value="dashen">Dashen Bank</option>
               <option value="awash">Awash Bank</option>
@@ -694,6 +693,7 @@
               <option value="cbebirr">CBE Birr</option>
               <option value="mpesa">M-Pesa Ethiopia</option>
               <option value="siinqee">Siinqee Bank</option>
+              <option value="kaafiebirr">KaafieBirr</option>
             </select>
           </div>
 
@@ -712,9 +712,16 @@
 
           <!-- Receiver Account Input (Available for both Txn and URL modes) -->
           <div class="form-group full-width">
-            <label for="accountInput">Receiver Account Number (Optional / Required for CBE)</label>
-            <input type="text" id="accountInput" class="form-control" placeholder="e.g. 100087654321">
-            <div class="hint-text">Receiver account number (e.g. 13-digit CBE account) for transaction verification matching.</div>
+            <label for="accountInput">Receiver Account / Suffix (Required for CBE/BOA)</label>
+            <input type="text" id="accountInput" class="form-control" placeholder="e.g. 100087654321 or 12345">
+            <div class="hint-text">Receiver account suffix (e.g. 8 digits for CBE, 5 digits for BOA).</div>
+          </div>
+
+          <!-- Phone Number Input (Available for CBE Birr) -->
+          <div class="form-group full-width">
+            <label for="phoneInput">Phone Number (Required for CBE Birr)</label>
+            <input type="text" id="phoneInput" class="form-control" placeholder="e.g. 0911223344">
+            <div class="hint-text">Required if verifying CBE Birr via receipt number.</div>
           </div>
 
         </div>
@@ -819,7 +826,7 @@
   <script>
     let activeTab = 'txn';
     let currentResponseData = null;
-    let verificationHistory = JSON.parse(localStorage.getItem('check_et_history') || '[]');
+    let verificationHistory = JSON.parse(localStorage.getItem('verify_et_history') || '[]');
 
     // Initialize UI
     document.addEventListener('DOMContentLoaded', () => {
@@ -880,7 +887,7 @@
       const accNum = document.getElementById('accountInput').value.trim();
       
       if (!apiKey) {
-        showToast('Please enter your Check.et API Key!');
+        showToast('Please enter your Verify.et API Key!');
         return;
       }
 
@@ -893,33 +900,43 @@
           showToast('Please enter a Transaction Number / FT Ref!');
           return;
         }
-        payload.transaction_number = txnNum;
+        payload.referenceNumber = txnNum;
+        payload.reference = txnNum;
       } else {
         const receiptUrl = document.getElementById('urlInput').value.trim();
         if (!receiptUrl) {
           showToast('Please enter a valid Receipt URL!');
           return;
         }
-        payload.receipt_url = receiptUrl;
+        payload.receiptUrl = receiptUrl;
       }
 
       // Receiver account option passed for both Txn and Receipt URL modes
       if (accNum) {
-        payload.account_number = accNum;
+        payload.accountSuffix = accNum;
+        payload.suffix = accNum;
+        payload.settlementAccount = accNum;
+      }
+      
+      const phoneNum = document.getElementById('phoneInput').value.trim();
+      if (phoneNum) {
+        payload.phoneNumber = phoneNum;
+        payload.phone = phoneNum;
       }
 
       setLoading(true);
 
-      // Endpoint: Use local python proxy /api/verify if running on http server, or direct API if file://
-      const endpoint = window.location.protocol.startsWith('http') 
+      const endpointParams = '?waitMs=5000';
+      const endpointUrl = window.location.protocol.startsWith('http') 
         ? '/api/verify' 
-        : 'https://api.check.et/api/v1/verify';
+        : 'https://verify.et/api/verify';
+      const endpoint = endpointUrl + endpointParams;
 
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'x-api-key': apiKey,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
@@ -948,13 +965,12 @@
       const card = document.getElementById('resultCard');
       card.style.display = 'block';
 
-      const data = res.data || {};
-      const receipt = data.receipt || {};
+      const apiData = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data[0] : (res.data || {});
+      const receipt = apiData;
 
       // Bank Name
       const bankNames = {
         cbe: 'Commercial Bank of Ethiopia',
-        amhara: 'Amhara Bank',
         telebirr: 'Telebirr',
         dashen: 'Dashen Bank',
         awash: 'Awash Bank',
@@ -962,22 +978,26 @@
         zemen: 'Zemen Bank',
         cbebirr: 'CBE Birr',
         mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank'
+        siinqee: 'Siinqee Bank',
+        kaafiebirr: 'KaafieBirr'
       };
 
-      const bankKey = data.bank || document.getElementById('bankSelect').value;
-      document.getElementById('resBankName').textContent = data.bank_name || bankNames[bankKey] || 'Bank Payment';
+      const bankKey = apiData.bank || document.getElementById('bankSelect').value;
+      document.getElementById('resBankName').textContent = apiData.bank_name || bankNames[bankKey] || 'Bank Payment';
       document.getElementById('resBankIcon').textContent = bankKey.toUpperCase().slice(0, 3);
       
-      const txnId = data.verification_id || data.transaction_number || receipt.transaction_number || 'N/A';
+      const txnId = res.requestId || apiData.referenceNumber || apiData.transactionNumber || apiData.transaction_number || 'N/A';
       document.getElementById('resTxnId').textContent = `Ref: ${txnId}`;
 
       // Status Badge
+      const isVerified = res.verification?.verified || apiData.verified || false;
+      const statusValue = res.verification?.status || apiData.status;
+
       const badge = document.getElementById('resStatusBadge');
       if (res.duplicate) {
         badge.className = 'status-badge duplicate';
         badge.textContent = '⚠ Duplicate Payment';
-      } else if (res.exists === false || receipt.status === 'failed') {
+      } else if (statusValue === 'failed' || !isVerified) {
         badge.className = 'status-badge failed';
         badge.textContent = '✕ Unverified / Failed';
       } else {
@@ -991,18 +1011,19 @@
       document.getElementById('resAmount').innerHTML = `${amt} <span>${currency}</span>`;
 
       // Details
-      document.getElementById('resPayerName').textContent = receipt.payer_name || 'N/A';
-      document.getElementById('resPayerAcc').textContent = receipt.payer_account ? `Acc: ${receipt.payer_account}` : 'Acc: N/A';
+      document.getElementById('resPayerName').textContent = receipt.senderName || receipt.payer_name || 'N/A';
+      document.getElementById('resPayerAcc').textContent = receipt.senderAccount || receipt.payer_account ? `Acc: ${receipt.senderAccount || receipt.payer_account}` : 'Acc: N/A';
 
-      document.getElementById('resReceiverName').textContent = receipt.receiver_name || 'N/A';
-      document.getElementById('resReceiverAcc').textContent = receipt.receiver_account ? `Acc: ${receipt.receiver_account}` : 'Acc: N/A';
+      document.getElementById('resReceiverName').textContent = receipt.receiverName || receipt.receiver_name || 'N/A';
+      document.getElementById('resReceiverAcc').textContent = receipt.receiverAccount || receipt.receiver_account ? `Acc: ${receipt.receiverAccount || receipt.receiver_account}` : 'Acc: N/A';
 
-      const txDate = receipt.transaction_date ? new Date(receipt.transaction_date).toLocaleString('en-US', {
+      const timestamp = receipt.timestamp || receipt.transaction_date;
+      const txDate = timestamp ? new Date(timestamp).toLocaleString('en-US', {
         dateStyle: 'medium',
         timeStyle: 'short'
       }) : 'N/A';
       document.getElementById('resDate').textContent = txDate;
-      document.getElementById('resMethod').textContent = `Method: ${data.verification_method || 'Official API'}`;
+      document.getElementById('resMethod').textContent = `Method: ${res.verification_method || 'Official API'}`;
 
       document.getElementById('resDescription').textContent = receipt.description || 'No payment note attached';
 
@@ -1019,7 +1040,6 @@
 
       const bankNames = {
         cbe: 'Commercial Bank of Ethiopia',
-        amhara: 'Amhara Bank',
         telebirr: 'Telebirr',
         dashen: 'Dashen Bank',
         awash: 'Awash Bank',
@@ -1027,7 +1047,8 @@
         zemen: 'Zemen Bank',
         cbebirr: 'CBE Birr',
         mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank'
+        siinqee: 'Siinqee Bank',
+        kaafiebirr: 'KaafieBirr'
       };
       const bankKey = document.getElementById('bankSelect').value;
       document.getElementById('resBankName').textContent = bankNames[bankKey] || 'Bank Payment';
@@ -1051,7 +1072,6 @@
 
       const bankNames = {
         cbe: 'Commercial Bank of Ethiopia',
-        amhara: 'Amhara Bank',
         telebirr: 'Telebirr',
         dashen: 'Dashen Bank',
         awash: 'Awash Bank',
@@ -1059,13 +1079,14 @@
         zemen: 'Zemen Bank',
         cbebirr: 'CBE Birr',
         mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank'
+        siinqee: 'Siinqee Bank',
+        kaafiebirr: 'KaafieBirr'
       };
 
       const mockResult = {
         success: false,
         exists: false,
-        message: err.message || "Failed to fetch from Check.et API.",
+        message: err.message || "Failed to fetch from Verify.et API.",
         data: {
           bank: payload.bank,
           bank_name: bankNames[payload.bank] || "Bank Payment",
@@ -1089,7 +1110,7 @@
 
       if (isLoading) {
         btn.disabled = true;
-        text.textContent = 'Verifying with Check.et...';
+        text.textContent = 'Verifying with Verify.et...';
         spinner.style.display = 'block';
       } else {
         btn.disabled = false;
@@ -1109,14 +1130,15 @@
 
     function copyReceiptSummary() {
       if (!currentResponseData) return;
-      const r = currentResponseData.data?.receipt || {};
+      const apiData = (currentResponseData.data && Array.isArray(currentResponseData.data) && currentResponseData.data.length > 0) ? currentResponseData.data[0] : (currentResponseData.data || {});
+      const r = apiData;
       const summary = `CBE Payment Receipt Summary:
 Status: Verified
-Txn Ref: ${currentResponseData.data?.transaction_number || 'N/A'}
+Txn Ref: ${currentResponseData.requestId || r.referenceNumber || r.transactionNumber || r.transaction_number || 'N/A'}
 Amount: ${r.amount || 0} ${r.currency || 'ETB'}
-Payer: ${r.payer_name || 'N/A'} (${r.payer_account || 'N/A'})
-Receiver: ${r.receiver_name || 'N/A'} (${r.receiver_account || 'N/A'})
-Date: ${r.transaction_date || 'N/A'}`;
+Payer: ${r.senderName || r.payer_name || 'N/A'} (${r.senderAccount || r.payer_account || 'N/A'})
+Receiver: ${r.receiverName || r.receiver_name || 'N/A'} (${r.receiverAccount || r.receiver_account || 'N/A'})
+Date: ${r.timestamp || r.transaction_date || 'N/A'}`;
 
       navigator.clipboard.writeText(summary).then(() => {
         showToast('Receipt Summary copied to clipboard!');
@@ -1124,9 +1146,10 @@ Date: ${r.transaction_date || 'N/A'}`;
     }
 
     function saveToHistory(res, payload) {
-      const receipt = res.data?.receipt || {};
+      const apiData = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data[0] : (res.data || {});
+      const receipt = apiData;
       const item = {
-        id: res.data?.transaction_number || payload.transaction_number || 'URL Check',
+        id: apiData.referenceNumber || apiData.transactionNumber || payload.referenceNumber || payload.reference || 'URL Check',
         bank: payload.bank.toUpperCase(),
         amount: receipt.amount || 0,
         currency: receipt.currency || 'ETB',
@@ -1136,7 +1159,7 @@ Date: ${r.transaction_date || 'N/A'}`;
 
       verificationHistory.unshift(item);
       if (verificationHistory.length > 10) verificationHistory.pop();
-      localStorage.setItem('check_et_history', JSON.stringify(verificationHistory));
+      localStorage.setItem('verify_et_history', JSON.stringify(verificationHistory));
       renderHistory();
     }
 
@@ -1169,7 +1192,7 @@ Date: ${r.transaction_date || 'N/A'}`;
 
     function clearHistory() {
       verificationHistory = [];
-      localStorage.removeItem('check_et_history');
+      localStorage.removeItem('verify_et_history');
       renderHistory();
       showToast('History cleared.');
     }
