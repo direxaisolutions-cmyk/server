@@ -7,6 +7,7 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
 VERIFY_ET_BASE = 'https://verify.et'
+PERMANENT_API_KEY = 'VERIFY_BANK_ET_KMnenH7xt56XIucfTSiWDpU4C4_KGBpjG-tt0Tva3qNzry1ZvBQdrNGoERX4iriM'
 
 def get_api_key():
     api_key = request.headers.get('x-api-key', '')
@@ -16,7 +17,7 @@ def get_api_key():
             api_key = auth_header.split(' ')[1]
         else:
             api_key = auth_header
-    return api_key
+    return api_key or PERMANENT_API_KEY
 
 def build_headers(api_key, extra=None):
     headers = {

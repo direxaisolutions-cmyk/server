@@ -6,6 +6,7 @@ let lastRequestId = null;
 let sseSource = null;
 let pollInterval = null;
 let localHistory = JSON.parse(localStorage.getItem('vet_history') || '[]');
+const API_KEY = 'VERIFY_BANK_ET_KMnenH7xt56XIucfTSiWDpU4C4_KGBpjG-tt0Tva3qNzry1ZvBQdrNGoERX4iriM';
 
 const BANK_NAMES = {
   cbe:'Commercial Bank of Ethiopia', amhara:'Amhara Bank', telebirr:'Telebirr',
@@ -14,16 +15,12 @@ const BANK_NAMES = {
   siinqee:'Siinqee Bank', kaafi:'Kaafi Ebirr'
 };
 
-function getApiKey(){ return document.getElementById('apiKeyInput').value.trim(); }
+function getApiKey(){ return API_KEY; }
 function getEndpoint(path){ return '/api/' + path; }
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
   renderLocalHistory();
-  document.getElementById('toggleApiKey').addEventListener('click', () => {
-    const inp = document.getElementById('apiKeyInput');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-  });
 });
 
 // ===== Main Tabs =====
@@ -426,7 +423,9 @@ async function fetchHistory(){
       if(data.meta) html += '<div class="history-meta-info">Showing '+data.data.length+' of '+data.meta.total+' results</div>';
       container.innerHTML = html;
     } else {
-      container.innerHTML = '<div class="result-box">' + escHtml(JSON.stringify(data, null, 2)) + '</div>';
+      container.innerHTML = data.success
+        ? '<div class="result-box">No verification history found.</div>'
+        : '<div class="result-box" style="color:var(--danger-text)">' + escHtml(data.message || JSON.stringify(data, null, 2)) + '</div>';
     }
   } catch(err){
     container.innerHTML = '<div class="result-box" style="color:var(--danger-text)">Error: '+escHtml(err.message)+'</div>';
@@ -476,10 +475,11 @@ async function fetchStatus(){
       const items = Array.isArray(data.data) ? data.data : [data.data];
       let html = '<div class="status-grid">';
       for(const item of items){
-        const isUp = item.status === 'up' || item.operational;
-        html += '<div class="status-card '+(isUp?'up':'down')+'">';
+        const state = item.status || (item.operational ? 'up' : 'unknown');
+        const stateLabel = state === 'up' ? 'Operational' : state === 'degraded' ? 'Degraded' : 'Unknown';
+        html += '<div class="status-card '+state+'">';
         html += '<div class="status-name">'+(BANK_NAMES[item.bank]||item.name||item.bank||'System')+'</div>';
-        html += '<div class="status-indicator">'+(isUp?'● Operational':'● Down')+'</div>';
+        html += '<div class="status-indicator">● '+stateLabel+'</div>';
         html += '</div>';
       }
       html += '</div>';
