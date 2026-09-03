@@ -3,1211 +3,323 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify.et Payment Verifier | Commercial Bank of Ethiopia</title>
-  <meta name="description" content="Verify Ethiopian Bank payment transactions and receipts using the official Verify.et API.">
+  <title>Verify.ET — Full Payment Verification Suite</title>
+  <meta name="description" content="Verify Ethiopian bank transactions with all Verify.ET features: Push, Pull/Stream, Polling, Webhooks, History & more.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #171026 100%);
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-hover-border: rgba(99, 102, 241, 0.3);
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --accent-primary: #6366f1;
-      --accent-secondary: #8b5cf6;
-      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-      --success-bg: rgba(16, 185, 129, 0.12);
-      --success-border: rgba(16, 185, 129, 0.3);
-      --success-text: #10b981;
-      --warning-bg: rgba(245, 158, 11, 0.12);
-      --warning-border: rgba(245, 158, 11, 0.3);
-      --warning-text: #f59e0b;
-      --danger-bg: rgba(239, 68, 68, 0.12);
-      --danger-border: rgba(239, 68, 68, 0.3);
-      --danger-text: #ef4444;
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      --shadow-glow: 0 10px 30px -10px rgba(99, 102, 241, 0.25);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
-      line-height: 1.5;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1.75rem;
-    }
-
-    /* Header */
-    .header {
-      text-align: center;
-      padding: 1.5rem 0 0.5rem;
-    }
-
-    .brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.9rem;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: 9999px;
-      font-size: 0.825rem;
-      font-weight: 600;
-      color: #a5b4fc;
-      margin-bottom: 1rem;
-    }
-
-    .brand-badge .dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-    }
-
-    .header p {
-      color: var(--text-secondary);
-      font-size: 1rem;
-      max-width: 580px;
-      margin: 0 auto;
-    }
-
-    /* Cards */
-    .glass-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 1.75rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    /* API Key Config Bar */
-    .api-bar {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .api-bar label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .input-wrapper input {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 0.75rem 1rem;
-      padding-right: 2.75rem;
-      color: var(--text-primary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.875rem;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    .input-wrapper input:focus {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    .toggle-btn {
-      position: absolute;
-      right: 0.75rem;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 0.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.2s ease;
-    }
-
-    .toggle-btn:hover {
-      color: var(--text-primary);
-    }
-
-    /* Tabs */
-    .tabs-nav {
-      display: flex;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 0.35rem;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--card-border);
-      gap: 0.25rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 0.65rem 1rem;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-weight: 600;
-      font-size: 0.875rem;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .tab-btn.active {
-      background: var(--accent-primary);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    /* Form Inputs */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-    }
-
-    @media (max-width: 640px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-
-    .form-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .form-control {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 0.75rem 1rem;
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    .form-control:focus {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    select.form-control {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 1.1rem;
-      padding-right: 2.5rem;
-    }
-
-    .hint-text {
-      font-size: 0.775rem;
-      color: var(--text-muted);
-      margin-top: 0.25rem;
-    }
-
-    .quick-samples {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .sample-chip {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      border-radius: 9999px;
-      color: #a5b4fc;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .sample-chip:hover {
-      background: rgba(99, 102, 241, 0.2);
-      border-color: rgba(99, 102, 241, 0.4);
-    }
-
-    /* Primary Button */
-    .btn-submit {
-      margin-top: 1.25rem;
-      width: 100%;
-      padding: 0.9rem 1.5rem;
-      background: var(--accent-gradient);
-      border: none;
-      border-radius: var(--radius-md);
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: var(--shadow-glow);
-      transition: all 0.25s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-    }
-
-    .btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 35px -5px rgba(99, 102, 241, 0.4);
-    }
-
-    .btn-submit:active {
-      transform: translateY(0);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Result Section */
-    .result-section {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .receipt-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding-bottom: 1.25rem;
-      border-bottom: 1px dashed var(--card-border);
-      margin-bottom: 1.25rem;
-    }
-
-    .bank-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .bank-icon {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: #fff;
-    }
-
-    .bank-details h3 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .bank-details p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.825rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .status-badge.verified {
-      background: var(--success-bg);
-      border: 1px solid var(--success-border);
-      color: var(--success-text);
-    }
-
-    .status-badge.duplicate {
-      background: var(--warning-bg);
-      border: 1px solid var(--warning-border);
-      color: var(--warning-text);
-    }
-
-    .status-badge.failed {
-      background: var(--danger-bg);
-      border: 1px solid var(--danger-border);
-      color: var(--danger-text);
-    }
-
-    .amount-display {
-      background: rgba(15, 23, 42, 0.5);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 1.25rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .amount-display label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-    }
-
-    .amount-val {
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: #10b981;
-      margin-top: 0.25rem;
-    }
-
-    .amount-val span {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-left: 0.25rem;
-    }
-
-    /* Details Grid */
-    .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 600px) {
-      .details-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .detail-item {
-      background: rgba(15, 23, 42, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: var(--radius-sm);
-      padding: 0.85rem;
-    }
-
-    .detail-item .label {
-      font-size: 0.775rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-
-    }
-
-    .detail-item .value {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-top: 0.2rem;
-      word-break: break-all;
-    }
-
-    .detail-item .sub-value {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Action bar for results */
-    .result-actions {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-secondary {
-      flex: 1;
-      padding: 0.65rem 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      color: var(--text-primary);
-      font-weight: 600;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    /* JSON Drawer */
-    .json-box {
-      margin-top: 1rem;
-      background: #090d16;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      color: #38bdf8;
-      max-height: 250px;
-      overflow-y: auto;
-      display: none;
-    }
-
-    /* Loading Spinner */
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* History section */
-    .history-section {
-      margin-top: 1rem;
-    }
-
-    .history-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text-secondary);
-      margin-bottom: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.4);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 0.75rem 1rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .history-item:hover {
-      background: rgba(30, 41, 59, 0.8);
-      border-color: var(--card-hover-border);
-    }
-
-    .history-meta {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .history-id {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-
-    .history-sub {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .history-amount {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: #10b981;
-    }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: #1e293b;
-      border: 1px solid var(--accent-primary);
-      color: #fff;
-      padding: 0.85rem 1.25rem;
-      border-radius: var(--radius-md);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      font-size: 0.875rem;
-      font-weight: 600;
-      z-index: 1000;
-      display: none;
-      animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
   <div class="container">
-    
     <!-- Header -->
     <header class="header">
-      <div class="brand-badge">
-        <span class="dot"></span> Verify.et Official Verification API
-      </div>
-      <h1>CBE Payment Verifier</h1>
-      <p>Verify Commercial Bank of Ethiopia payments directly using official transaction references or receipt URLs.</p>
+      <div class="brand-badge"><span class="dot"></span> Verify.ET Full API Suite</div>
+      <h1>Payment Verification Hub</h1>
+      <p>All Verify.ET features in one dashboard — Verify, Stream, Poll, History, Webhooks & Bank Status.</p>
     </header>
 
     <!-- API Config Card -->
     <div class="glass-card">
       <div class="api-bar">
         <label for="apiKeyInput">
-          <span>API Key Authorization</span>
-          <span style="color: #10b981; font-weight: 500; font-size: 0.775rem;">Connected to verify.et</span>
+          <span>🔑 API Key Authorization</span>
+          <span class="status-dot-label"><span class="dot"></span> Connected</span>
         </label>
         <div class="input-wrapper">
-          <input type="password" id="apiKeyInput" value="VERIFY_BANK_ET_zPNYhmxU7kRd2yBZrKE5C7MjsRlkHODag5Su9kvIcQOszijAVuO37sgqUVLnznGv" placeholder="VERIFY_BANK_ET_..." autocomplete="off">
+          <input type="password" id="apiKeyInput" value="" placeholder="VERIFY_BANK_ET_..." autocomplete="off">
           <button type="button" class="toggle-btn" id="toggleApiKey" title="Toggle visibility">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Main Form Card -->
-    <div class="glass-card">
-      <!-- Tabs -->
-      <div class="tabs-nav">
-        <button type="button" class="tab-btn active" id="tabTxn" onclick="switchTab('txn')">
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Transaction / Verification ID
-        </button>
-        <button type="button" class="tab-btn" id="tabUrl" onclick="switchTab('url')">
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-          Receipt URL
-        </button>
+    <!-- Main Navigation Tabs -->
+    <div class="glass-card main-tabs-card">
+      <div class="main-tabs-nav">
+        <button class="main-tab active" onclick="switchMainTab('verify')">🔍 Verify</button>
+        <button class="main-tab" onclick="switchMainTab('stream')">📡 Stream</button>
+        <button class="main-tab" onclick="switchMainTab('poll')">🔄 Poll</button>
+        <button class="main-tab" onclick="switchMainTab('history')">📋 History</button>
+        <button class="main-tab" onclick="switchMainTab('webhook')">🪝 Webhook</button>
+        <button class="main-tab" onclick="switchMainTab('status')">💚 Status</button>
       </div>
-
-      <form id="verifyForm" onsubmit="handleVerify(event)">
-        <div class="form-grid">
-          
-          <!-- Bank Select -->
-          <div class="form-group">
-            <label for="bankSelect">Bank Provider</label>
-            <select id="bankSelect" class="form-control">
-              <option value="cbe" selected>Commercial Bank of Ethiopia (CBE)</option>
-              <option value="telebirr">Telebirr</option>
-              <option value="dashen">Dashen Bank</option>
-              <option value="awash">Awash Bank</option>
-              <option value="boa">Bank of Abyssinia (BOA)</option>
-              <option value="zemen">Zemen Bank</option>
-              <option value="cbebirr">CBE Birr</option>
-              <option value="mpesa">M-Pesa Ethiopia</option>
-              <option value="siinqee">Siinqee Bank</option>
-              <option value="kaafiebirr">KaafieBirr</option>
-            </select>
-          </div>
-
-          <!-- Transaction Number Input (for Txn Mode) -->
-          <div id="txnFieldsGroup" class="form-group">
-            <label for="txnInput">Transaction / FT Ref Number *</label>
-            <input type="text" id="txnInput" class="form-control" placeholder="e.g. FT25161234567" required>
-          </div>
-
-          <!-- Receipt URL Input (for URL Mode) -->
-          <div id="urlFieldsGroup" class="form-group" style="display: none;">
-            <label for="urlInput">Receipt URL *</label>
-            <input type="url" id="urlInput" class="form-control" placeholder="https://cbe.com.et/receipt/...">
-            <div class="hint-text">Paste the full receipt web URL shared from mobile banking app.</div>
-          </div>
-
-          <!-- Receiver Account Input (Available for both Txn and URL modes) -->
-          <div class="form-group full-width">
-            <label for="accountInput">Receiver Account / Suffix (Required for CBE/BOA)</label>
-            <input type="text" id="accountInput" class="form-control" placeholder="e.g. 100087654321 or 12345">
-            <div class="hint-text">Receiver account suffix (e.g. 8 digits for CBE, 5 digits for BOA).</div>
-          </div>
-
-          <!-- Phone Number Input (Available for CBE Birr) -->
-          <div class="form-group full-width">
-            <label for="phoneInput">Phone Number (Required for CBE Birr)</label>
-            <input type="text" id="phoneInput" class="form-control" placeholder="e.g. 0911223344">
-            <div class="hint-text">Required if verifying CBE Birr via receipt number.</div>
-          </div>
-
-        </div>
-
-        <!-- Sample Loaders -->
-        <div class="quick-samples">
-          <span style="font-size:0.75rem; color: var(--text-muted); font-weight: 600;">Samples:</span>
-          <button type="button" class="sample-chip" onclick="fillSample('FT25161234567', '1000876543218')">FT25161234567</button>
-          <button type="button" class="sample-chip" onclick="fillSample('FT24098765432', '1000123456789')">FT24098765432</button>
-        </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn-submit" id="btnSubmit">
-          <span id="btnText">Verify Transaction Now</span>
-          <div class="spinner" id="btnSpinner" style="display: none;"></div>
-        </button>
-      </form>
     </div>
 
-    <!-- Results Section -->
+    <!-- ===== TAB: VERIFY ===== -->
+    <div class="tab-panel active" id="panel-verify">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>🔍 Verify Transaction</span>
+          <span class="card-subtitle">POST /api/verify — Push verification with optional short-wait</span>
+        </div>
+        <div class="tabs-nav">
+          <button type="button" class="tab-btn active" id="tabTxn" onclick="switchSubTab('txn')">📄 Reference Number</button>
+          <button type="button" class="tab-btn" id="tabUrl" onclick="switchSubTab('url')">🔗 Receipt URL</button>
+        </div>
+        <form id="verifyForm" onsubmit="handleVerify(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bankSelect">Bank Provider</label>
+              <select id="bankSelect" class="form-control">
+                <option value="cbe" selected>Commercial Bank of Ethiopia (CBE)</option>
+                <option value="amhara">Amhara Bank</option>
+                <option value="telebirr">Telebirr</option>
+                <option value="dashen">Dashen Bank</option>
+                <option value="awash">Awash Bank</option>
+                <option value="boa">Bank of Abyssinia (BOA)</option>
+                <option value="zemen">Zemen Bank</option>
+                <option value="cbebirr">CBE Birr</option>
+                <option value="mpesa">M-Pesa Ethiopia</option>
+                <option value="siinqee">Siinqee Bank</option>
+                <option value="kaafi">Kaafi Ebirr</option>
+              </select>
+            </div>
+            <div id="txnFieldsGroup" class="form-group">
+              <label for="txnInput">Transaction / FT Ref Number *</label>
+              <input type="text" id="txnInput" class="form-control" placeholder="e.g. FT25161234567" required>
+            </div>
+            <div id="urlFieldsGroup" class="form-group" style="display:none;">
+              <label for="urlInput">Receipt URL *</label>
+              <input type="url" id="urlInput" class="form-control" placeholder="https://cbe.com.et/receipt/...">
+              <div class="hint-text">Paste the full receipt URL shared from mobile banking.</div>
+            </div>
+            <div class="form-group">
+              <label for="accountInput">Settlement Account (Optional)</label>
+              <input type="text" id="accountInput" class="form-control" placeholder="e.g. 1000303997441">
+              <div class="hint-text">Receiver account for settlement matching.</div>
+            </div>
+            <div class="form-group">
+              <label for="waitMsInput">Wait Time (ms)</label>
+              <input type="number" id="waitMsInput" class="form-control" value="5000" min="0" max="15000" step="500">
+              <div class="hint-text">How long the server waits before returning queued.</div>
+            </div>
+            <div class="form-group">
+              <label for="idempotencyInput">Idempotency Key (Optional)</label>
+              <input type="text" id="idempotencyInput" class="form-control" placeholder="Auto-generated if empty">
+            </div>
+            <div class="form-group">
+              <label for="webhookUrlInput">Webhook URL (Optional)</label>
+              <input type="url" id="webhookUrlInput" class="form-control" placeholder="https://your-app.com/webhooks/verify">
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btnSubmit">
+            <span id="btnText">🚀 Verify Transaction Now</span>
+            <div class="spinner" id="btnSpinner" style="display:none;"></div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== TAB: STREAM (SSE) ===== -->
+    <div class="tab-panel" id="panel-stream">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>📡 Real-Time Stream (SSE)</span>
+          <span class="card-subtitle">GET /api/verify/:requestId/events — Server-Sent Events</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="streamRequestId">Request ID</label>
+            <input type="text" id="streamRequestId" class="form-control" placeholder="550e8400-e29b-41d4-a716-446655440000">
+            <div class="hint-text">Enter the requestId from a queued verification to stream live updates.</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn-submit" onclick="startStream()" id="btnStream">
+            <span>📡 Start Stream</span>
+          </button>
+          <button type="button" class="btn-danger" onclick="stopStream()" id="btnStopStream" style="display:none;">
+            ⏹ Stop
+          </button>
+        </div>
+        <div id="streamEventsContainer" class="stream-events" style="display:none;">
+          <div class="stream-header">
+            <span>Live Events</span>
+            <span class="stream-status" id="streamStatusDot">● Connecting</span>
+          </div>
+          <div id="streamEventsList" class="stream-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: POLL ===== -->
+    <div class="tab-panel" id="panel-poll">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>🔄 Poll Verification Status</span>
+          <span class="card-subtitle">GET /api/verify/:requestId — Check status by ID</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="pollRequestId">Request ID</label>
+            <input type="text" id="pollRequestId" class="form-control" placeholder="550e8400-e29b-41d4-a716-446655440000">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn-submit" onclick="pollOnce()">🔄 Poll Once</button>
+          <button type="button" class="btn-submit btn-secondary-action" onclick="startAutoPoll()" id="btnAutoPoll">⚡ Auto-Poll</button>
+          <button type="button" class="btn-danger" onclick="stopAutoPoll()" id="btnStopPoll" style="display:none;">⏹ Stop</button>
+        </div>
+        <div id="pollResultContainer" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: HISTORY ===== -->
+    <div class="tab-panel" id="panel-history">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>📋 Verification History</span>
+          <span class="card-subtitle">GET /api/verify/history — Server-side history with filters</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="histBank">Filter by Bank</label>
+            <select id="histBank" class="form-control">
+              <option value="">All Banks</option>
+              <option value="cbe">CBE</option>
+              <option value="telebirr">Telebirr</option>
+              <option value="dashen">Dashen</option>
+              <option value="awash">Awash</option>
+              <option value="boa">BOA</option>
+              <option value="cbebirr">CBE Birr</option>
+              <option value="siinqee">Siinqee</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="amhara">Amhara</option>
+              <option value="zemen">Zemen</option>
+              <option value="kaafi">Kaafi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="histStatus">Filter by Status</label>
+            <select id="histStatus" class="form-control">
+              <option value="">All Statuses</option>
+              <option value="success">Success</option>
+              <option value="failed">Failed</option>
+              <option value="not_found">Not Found</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="histLimit">Limit</label>
+            <input type="number" id="histLimit" class="form-control" value="20" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label for="histOffset">Offset</label>
+            <input type="number" id="histOffset" class="form-control" value="0" min="0">
+          </div>
+        </div>
+        <button type="button" class="btn-submit" onclick="fetchHistory()">📋 Fetch History</button>
+        <div id="historyResultContainer" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: WEBHOOK ===== -->
+    <div class="tab-panel" id="panel-webhook">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>🪝 Webhook Tester</span>
+          <span class="card-subtitle">POST /api/verify/test-webhook — Send a test webhook event</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="testWebhookUrl">Webhook URL</label>
+            <input type="url" id="testWebhookUrl" class="form-control" placeholder="https://your-app.com/webhooks/verify">
+          </div>
+          <div class="form-group">
+            <label for="webhookScenario">Scenario</label>
+            <select id="webhookScenario" class="form-control">
+              <option value="success">Success</option>
+              <option value="failed">Failed</option>
+              <option value="not_found">Not Found</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn-submit" onclick="testWebhook()">🪝 Send Test Webhook</button>
+        <div id="webhookResultContainer" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: STATUS ===== -->
+    <div class="tab-panel" id="panel-status">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>💚 Bank & System Status</span>
+          <span class="card-subtitle">GET /api/uptime — Check provider availability</span>
+        </div>
+        <button type="button" class="btn-submit" onclick="fetchStatus()">💚 Check System Status</button>
+        <div id="statusResultContainer" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ===== RESULT CARD (shared for verify) ===== -->
     <div class="glass-card result-section" id="resultCard">
       <div class="receipt-header">
         <div class="bank-info">
           <div class="bank-icon" id="resBankIcon">CBE</div>
           <div class="bank-details">
             <h3 id="resBankName">Commercial Bank of Ethiopia</h3>
-            <p id="resTxnId">Ref: FT25161234567</p>
+            <p id="resTxnId">Ref: —</p>
           </div>
         </div>
-        <div class="status-badge verified" id="resStatusBadge">
-          ✓ Verified
-        </div>
+        <div class="status-badge verified" id="resStatusBadge">✓ Verified</div>
       </div>
-
-      <!-- Amount Banner -->
       <div class="amount-display">
         <label>Total Verified Amount</label>
-        <div class="amount-val" id="resAmount">1,350.00 <span>ETB</span></div>
+        <div class="amount-val" id="resAmount">0.00 <span>ETB</span></div>
       </div>
-
-      <!-- Detail Grid -->
       <div class="details-grid">
-        <div class="detail-item">
-          <div class="label">Payer Details</div>
-          <div class="value" id="resPayerName">Hayat Ahmed</div>
-          <div class="sub-value" id="resPayerAcc">Acc: 100012345678</div>
+        <div class="detail-item"><div class="label">Payer</div><div class="value" id="resPayerName">—</div><div class="sub-value" id="resPayerAcc">Acc: —</div></div>
+        <div class="detail-item"><div class="label">Receiver</div><div class="value" id="resReceiverName">—</div><div class="sub-value" id="resReceiverAcc">Acc: —</div></div>
+        <div class="detail-item"><div class="label">Date</div><div class="value" id="resDate">—</div><div class="sub-value" id="resMethod">Method: —</div></div>
+        <div class="detail-item"><div class="label">Description</div><div class="value" id="resDescription">—</div></div>
+      </div>
+      <!-- Settlement Match -->
+      <div id="settlementMatchSection" class="settlement-section" style="display:none;">
+        <div class="section-title">🏦 Settlement Account Match</div>
+        <div class="details-grid" id="settlementGrid"></div>
+      </div>
+      <!-- Confirmation History -->
+      <div id="confirmationSection" class="settlement-section" style="display:none;">
+        <div class="section-title">📊 Confirmation History</div>
+        <div class="details-grid" id="confirmationGrid"></div>
+      </div>
+      <!-- Queued Info -->
+      <div id="queuedSection" class="queued-section" style="display:none;">
+        <div class="queued-banner">
+          <div class="spinner"></div>
+          <div>
+            <strong>Verification Queued</strong>
+            <p id="queuedMessage">Processing in background...</p>
+          </div>
         </div>
-
-        <div class="detail-item">
-          <div class="label">Receiver Details</div>
-          <div class="value" id="resReceiverName">Abebe Bekele</div>
-          <div class="sub-value" id="resReceiverAcc">Acc: 100087654321</div>
-        </div>
-
-        <div class="detail-item">
-          <div class="label">Transaction Date</div>
-          <div class="value" id="resDate">June 10, 2025 - 02:30 PM</div>
-          <div class="sub-value" id="resMethod">Method: Official API</div>
-        </div>
-
-        <div class="detail-item">
-          <div class="label">Description / Note</div>
-          <div class="value" id="resDescription">Payment for invoice #1042</div>
+        <div class="btn-row" style="margin-top:1rem;">
+          <button type="button" class="btn-submit btn-secondary-action" onclick="autoStreamFromResult()">📡 Stream Updates</button>
+          <button type="button" class="btn-submit btn-secondary-action" onclick="autoPollFromResult()">🔄 Auto-Poll</button>
         </div>
       </div>
-
-      <!-- Actions -->
       <div class="result-actions">
-        <button type="button" class="btn-secondary" onclick="copyReceiptSummary()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-          Copy Summary
-        </button>
-        <button type="button" class="btn-secondary" onclick="toggleJsonView()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-          View Raw JSON
-        </button>
-        <button type="button" class="btn-secondary" onclick="window.print()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-          Print Receipt
-        </button>
+        <button type="button" class="btn-secondary" onclick="copyReceiptSummary()">📋 Copy Summary</button>
+        <button type="button" class="btn-secondary" onclick="toggleJsonView()">{ } Raw JSON</button>
+        <button type="button" class="btn-secondary" onclick="window.print()">🖨 Print</button>
       </div>
-
-      <!-- Raw JSON Box -->
       <pre class="json-box" id="jsonBox"></pre>
     </div>
 
-    <!-- Verification History Card -->
-    <div class="glass-card history-section" id="historyCard">
+    <!-- Local History -->
+    <div class="glass-card" id="localHistoryCard">
       <div class="history-title">
-        <span>Recent Verification History</span>
-        <button type="button" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;" onclick="clearHistory()">Clear All</button>
+        <span>🕐 Recent Local Verifications</span>
+        <button type="button" class="clear-btn" onclick="clearLocalHistory()">Clear</button>
       </div>
-      <div class="history-list" id="historyList">
-        <div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:1rem 0;">No recent verifications in history yet.</div>
+      <div class="history-list" id="localHistoryList">
+        <div class="empty-state">No verifications yet.</div>
       </div>
     </div>
-
   </div>
 
-  <div class="toast" id="toast">Notification text</div>
-
-  <script>
-    let activeTab = 'txn';
-    let currentResponseData = null;
-    let verificationHistory = JSON.parse(localStorage.getItem('verify_et_history') || '[]');
-
-    // Initialize UI
-    document.addEventListener('DOMContentLoaded', () => {
-      renderHistory();
-      
-      // API Key Toggle
-      const apiKeyInput = document.getElementById('apiKeyInput');
-      const toggleApiKey = document.getElementById('toggleApiKey');
-      toggleApiKey.addEventListener('click', () => {
-        if (apiKeyInput.type === 'password') {
-          apiKeyInput.type = 'text';
-        } else {
-          apiKeyInput.type = 'password';
-        }
-      });
-    });
-
-    function switchTab(tab) {
-      activeTab = tab;
-      const tabTxn = document.getElementById('tabTxn');
-      const tabUrl = document.getElementById('tabUrl');
-      const txnGroup = document.getElementById('txnFieldsGroup');
-      const urlGroup = document.getElementById('urlFieldsGroup');
-      const txnInput = document.getElementById('txnInput');
-      const urlInput = document.getElementById('urlInput');
-
-      if (tab === 'txn') {
-        tabTxn.classList.add('active');
-        tabUrl.classList.remove('active');
-        txnGroup.style.display = 'flex';
-        urlGroup.style.display = 'none';
-        txnInput.required = true;
-        urlInput.required = false;
-      } else {
-        tabUrl.classList.add('active');
-        tabTxn.classList.remove('active');
-        txnGroup.style.display = 'none';
-        urlGroup.style.display = 'flex';
-        txnInput.required = false;
-        urlInput.required = true;
-      }
-    }
-
-    function fillSample(ftNumber, accNumber) {
-      switchTab('txn');
-      document.getElementById('txnInput').value = ftNumber;
-      if (accNumber) {
-        document.getElementById('accountInput').value = accNumber;
-      }
-      showToast('Sample data pre-filled!');
-    }
-
-    async function handleVerify(e) {
-      e.preventDefault();
-
-      const apiKey = document.getElementById('apiKeyInput').value.trim();
-      const bank = document.getElementById('bankSelect').value;
-      const accNum = document.getElementById('accountInput').value.trim();
-      
-      if (!apiKey) {
-        showToast('Please enter your Verify.et API Key!');
-        return;
-      }
-
-      // Build payload based on active tab
-      const payload = { bank };
-
-      if (activeTab === 'txn') {
-        const txnNum = document.getElementById('txnInput').value.trim();
-        if (!txnNum) {
-          showToast('Please enter a Transaction Number / FT Ref!');
-          return;
-        }
-        payload.referenceNumber = txnNum;
-        payload.reference = txnNum;
-      } else {
-        const receiptUrl = document.getElementById('urlInput').value.trim();
-        if (!receiptUrl) {
-          showToast('Please enter a valid Receipt URL!');
-          return;
-        }
-        payload.receiptUrl = receiptUrl;
-      }
-
-      // Receiver account option passed for both Txn and Receipt URL modes
-      if (accNum) {
-        payload.accountSuffix = accNum;
-        payload.suffix = accNum;
-        payload.settlementAccount = accNum;
-      }
-      
-      const phoneNum = document.getElementById('phoneInput').value.trim();
-      if (phoneNum) {
-        payload.phoneNumber = phoneNum;
-        payload.phone = phoneNum;
-      }
-
-      setLoading(true);
-
-      const endpointParams = '?waitMs=5000';
-      const endpointUrl = window.location.protocol.startsWith('http') 
-        ? '/api/verify' 
-        : 'https://verify.et/api/verify';
-      const endpoint = endpointUrl + endpointParams;
-
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'x-api-key': apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-        currentResponseData = data;
-
-        if (response.ok && data.success !== false) {
-          displayResult(data);
-          saveToHistory(data, payload);
-          showToast('Verification Successful!');
-        } else {
-          handleApiError(data, response.status);
-        }
-
-      } catch (err) {
-        console.error('Fetch Error:', err);
-        // Display graceful error state or fallback preview if network/CORS blocks client request directly
-        handleNetworkError(err, payload);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    function displayResult(res) {
-      const card = document.getElementById('resultCard');
-      card.style.display = 'block';
-
-      const apiData = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data[0] : (res.data || {});
-      const receipt = apiData;
-
-      // Bank Name
-      const bankNames = {
-        cbe: 'Commercial Bank of Ethiopia',
-        telebirr: 'Telebirr',
-        dashen: 'Dashen Bank',
-        awash: 'Awash Bank',
-        boa: 'Bank of Abyssinia',
-        zemen: 'Zemen Bank',
-        cbebirr: 'CBE Birr',
-        mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank',
-        kaafiebirr: 'KaafieBirr'
-      };
-
-      const bankKey = apiData.bank || document.getElementById('bankSelect').value;
-      document.getElementById('resBankName').textContent = apiData.bank_name || bankNames[bankKey] || 'Bank Payment';
-      document.getElementById('resBankIcon').textContent = bankKey.toUpperCase().slice(0, 3);
-      
-      const txnId = res.requestId || apiData.referenceNumber || apiData.transactionNumber || apiData.transaction_number || 'N/A';
-      document.getElementById('resTxnId').textContent = `Ref: ${txnId}`;
-
-      // Status Badge
-      const isVerified = res.verification?.verified || apiData.verified || false;
-      const statusValue = res.verification?.status || apiData.status;
-
-      const badge = document.getElementById('resStatusBadge');
-      if (res.duplicate) {
-        badge.className = 'status-badge duplicate';
-        badge.textContent = '⚠ Duplicate Payment';
-      } else if (statusValue === 'failed' || !isVerified) {
-        badge.className = 'status-badge failed';
-        badge.textContent = '✕ Unverified / Failed';
-      } else {
-        badge.className = 'status-badge verified';
-        badge.textContent = '✓ Verified & Completed';
-      }
-
-      // Amount
-      const amt = receipt.amount !== undefined ? Number(receipt.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00';
-      const currency = receipt.currency || 'ETB';
-      document.getElementById('resAmount').innerHTML = `${amt} <span>${currency}</span>`;
-
-      // Details
-      document.getElementById('resPayerName').textContent = receipt.senderName || receipt.payer_name || 'N/A';
-      document.getElementById('resPayerAcc').textContent = receipt.senderAccount || receipt.payer_account ? `Acc: ${receipt.senderAccount || receipt.payer_account}` : 'Acc: N/A';
-
-      document.getElementById('resReceiverName').textContent = receipt.receiverName || receipt.receiver_name || 'N/A';
-      document.getElementById('resReceiverAcc').textContent = receipt.receiverAccount || receipt.receiver_account ? `Acc: ${receipt.receiverAccount || receipt.receiver_account}` : 'Acc: N/A';
-
-      const timestamp = receipt.timestamp || receipt.transaction_date;
-      const txDate = timestamp ? new Date(timestamp).toLocaleString('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-      }) : 'N/A';
-      document.getElementById('resDate').textContent = txDate;
-      document.getElementById('resMethod').textContent = `Method: ${res.verification_method || 'Official API'}`;
-
-      document.getElementById('resDescription').textContent = receipt.description || 'No payment note attached';
-
-      // JSON
-      document.getElementById('jsonBox').textContent = JSON.stringify(res, null, 2);
-
-      // Scroll into view smooth
-      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function handleApiError(data, status) {
-      const card = document.getElementById('resultCard');
-      card.style.display = 'block';
-
-      const bankNames = {
-        cbe: 'Commercial Bank of Ethiopia',
-        telebirr: 'Telebirr',
-        dashen: 'Dashen Bank',
-        awash: 'Awash Bank',
-        boa: 'Bank of Abyssinia',
-        zemen: 'Zemen Bank',
-        cbebirr: 'CBE Birr',
-        mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank',
-        kaafiebirr: 'KaafieBirr'
-      };
-      const bankKey = document.getElementById('bankSelect').value;
-      document.getElementById('resBankName').textContent = bankNames[bankKey] || 'Bank Payment';
-      document.getElementById('resBankIcon').textContent = bankKey.toUpperCase().slice(0, 3);
-
-      const badge = document.getElementById('resStatusBadge');
-      badge.className = 'status-badge failed';
-      badge.textContent = `✕ Error (${status})`;
-
-      document.getElementById('resAmount').innerHTML = `0.00 <span>ETB</span>`;
-      document.getElementById('resTxnId').textContent = `Status Code: ${status}`;
-      document.getElementById('resPayerName').textContent = data.message || 'Verification Failed';
-      document.getElementById('resPayerAcc').textContent = 'Please verify the transaction ID or API Key.';
-
-      document.getElementById('jsonBox').textContent = JSON.stringify(data, null, 2);
-      showToast(`Verification Failed: ${data.message || 'Invalid Request'}`);
-    }
-
-    function handleNetworkError(err, payload) {
-      showToast('API Request Error or CORS limitation.');
-
-      const bankNames = {
-        cbe: 'Commercial Bank of Ethiopia',
-        telebirr: 'Telebirr',
-        dashen: 'Dashen Bank',
-        awash: 'Awash Bank',
-        boa: 'Bank of Abyssinia',
-        zemen: 'Zemen Bank',
-        cbebirr: 'CBE Birr',
-        mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank',
-        kaafiebirr: 'KaafieBirr'
-      };
-
-      // Mock structure display for user clarity if CORS blocks browser directly
-      const mockResult = {
-        success: false,
-        exists: false,
-        message: err.message || "Failed to fetch from Verify.et API (Possible CORS or Network Issue).",
-        data: {
-          bank: payload.bank,
-          bank_name: bankNames[payload.bank] || "Bank Payment",
-          transaction_number: payload.transaction_number || "N/A",
-          receipt: {
-            status: "error",
-            amount: 0,
-            currency: "ETB",
-            description: "Direct client-side request was blocked or failed. Consider proxying through a backend if browser CORS is active."
-          }
-        }
-      };
-
-      displayResult(mockResult);
-    }
-
-    function setLoading(isLoading) {
-      const btn = document.getElementById('btnSubmit');
-      const text = document.getElementById('btnText');
-      const spinner = document.getElementById('btnSpinner');
-
-      if (isLoading) {
-        btn.disabled = true;
-        text.textContent = 'Verifying with Verify.et...';
-        spinner.style.display = 'block';
-      } else {
-        btn.disabled = false;
-        text.textContent = 'Verify Transaction Now';
-        spinner.style.display = 'none';
-      }
-    }
-
-    function toggleJsonView() {
-      const box = document.getElementById('jsonBox');
-      if (box.style.display === 'block') {
-        box.style.display = 'none';
-      } else {
-        box.style.display = 'block';
-      }
-    }
-
-    function copyReceiptSummary() {
-      if (!currentResponseData) return;
-      const apiData = (currentResponseData.data && Array.isArray(currentResponseData.data) && currentResponseData.data.length > 0) ? currentResponseData.data[0] : (currentResponseData.data || {});
-      const r = apiData;
-      const summary = `CBE Payment Receipt Summary:
-Status: Verified
-Txn Ref: ${currentResponseData.requestId || r.referenceNumber || r.transactionNumber || r.transaction_number || 'N/A'}
-Amount: ${r.amount || 0} ${r.currency || 'ETB'}
-Payer: ${r.senderName || r.payer_name || 'N/A'} (${r.senderAccount || r.payer_account || 'N/A'})
-Receiver: ${r.receiverName || r.receiver_name || 'N/A'} (${r.receiverAccount || r.receiver_account || 'N/A'})
-Date: ${r.timestamp || r.transaction_date || 'N/A'}`;
-
-      navigator.clipboard.writeText(summary).then(() => {
-        showToast('Receipt Summary copied to clipboard!');
-      });
-    }
-
-    function saveToHistory(res, payload) {
-      const apiData = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data[0] : (res.data || {});
-      const receipt = apiData;
-      const item = {
-        id: apiData.referenceNumber || apiData.transactionNumber || payload.referenceNumber || payload.reference || 'URL Check',
-        bank: payload.bank.toUpperCase(),
-        amount: receipt.amount || 0,
-        currency: receipt.currency || 'ETB',
-        date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        fullData: res
-      };
-
-      verificationHistory.unshift(item);
-      if (verificationHistory.length > 10) verificationHistory.pop();
-      localStorage.setItem('verify_et_history', JSON.stringify(verificationHistory));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const container = document.getElementById('historyList');
-      if (!verificationHistory.length) {
-        container.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:1rem 0;">No recent verifications in history yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = verificationHistory.map((item, idx) => `
-        <div class="history-item" onclick="loadFromHistory(${idx})">
-          <div class="history-meta">
-            <div class="history-id">${item.bank} - ${item.id}</div>
-            <div class="history-sub">Verified at ${item.date}</div>
-          </div>
-          <div class="history-amount">${Number(item.amount).toLocaleString()} ${item.currency}</div>
-        </div>
-      `).join('');
-    }
-
-    function loadFromHistory(index) {
-      const item = verificationHistory[index];
-      if (item && item.fullData) {
-        currentResponseData = item.fullData;
-        displayResult(item.fullData);
-        showToast(`Loaded history item: ${item.id}`);
-      }
-    }
-
-    function clearHistory() {
-      verificationHistory = [];
-      localStorage.removeItem('verify_et_history');
-      renderHistory();
-      showToast('History cleared.');
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.style.display = 'block';
-      setTimeout(() => {
-        toast.style.display = 'none';
-      }, 3000);
-    }
-  </script>
+  <div class="toast" id="toast">Notification</div>
+  <script src="app.js"></script>
 </body>
 </html>

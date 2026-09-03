@@ -685,6 +685,7 @@
             <label for="bankSelect">Bank Provider</label>
             <select id="bankSelect" class="form-control">
               <option value="cbe" selected>Commercial Bank of Ethiopia (CBE)</option>
+              <option value="amhara">Amhara Bank</option>
               <option value="telebirr">Telebirr</option>
               <option value="dashen">Dashen Bank</option>
               <option value="awash">Awash Bank</option>
@@ -693,7 +694,6 @@
               <option value="cbebirr">CBE Birr</option>
               <option value="mpesa">M-Pesa Ethiopia</option>
               <option value="siinqee">Siinqee Bank</option>
-              <option value="kaafiebirr">KaafieBirr</option>
             </select>
           </div>
 
@@ -712,16 +712,9 @@
 
           <!-- Receiver Account Input (Available for both Txn and URL modes) -->
           <div class="form-group full-width">
-            <label for="accountInput">Receiver Account / Suffix (Required for CBE/BOA)</label>
-            <input type="text" id="accountInput" class="form-control" placeholder="e.g. 100087654321 or 12345">
-            <div class="hint-text">Receiver account suffix (e.g. 8 digits for CBE, 5 digits for BOA).</div>
-          </div>
-
-          <!-- Phone Number Input (Available for CBE Birr) -->
-          <div class="form-group full-width">
-            <label for="phoneInput">Phone Number (Required for CBE Birr)</label>
-            <input type="text" id="phoneInput" class="form-control" placeholder="e.g. 0911223344">
-            <div class="hint-text">Required if verifying CBE Birr via receipt number.</div>
+            <label for="accountInput">Receiver Account Number (Optional / Required for CBE)</label>
+            <input type="text" id="accountInput" class="form-control" placeholder="e.g. 100087654321">
+            <div class="hint-text">Receiver account number (e.g. 13-digit CBE account) for transaction verification matching.</div>
           </div>
 
         </div>
@@ -914,14 +907,7 @@
       // Receiver account option passed for both Txn and Receipt URL modes
       if (accNum) {
         payload.accountSuffix = accNum;
-        payload.suffix = accNum;
         payload.settlementAccount = accNum;
-      }
-      
-      const phoneNum = document.getElementById('phoneInput').value.trim();
-      if (phoneNum) {
-        payload.phoneNumber = phoneNum;
-        payload.phone = phoneNum;
       }
 
       setLoading(true);
@@ -971,6 +957,7 @@
       // Bank Name
       const bankNames = {
         cbe: 'Commercial Bank of Ethiopia',
+        amhara: 'Amhara Bank',
         telebirr: 'Telebirr',
         dashen: 'Dashen Bank',
         awash: 'Awash Bank',
@@ -978,8 +965,7 @@
         zemen: 'Zemen Bank',
         cbebirr: 'CBE Birr',
         mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank',
-        kaafiebirr: 'KaafieBirr'
+        siinqee: 'Siinqee Bank'
       };
 
       const bankKey = apiData.bank || document.getElementById('bankSelect').value;
@@ -1040,6 +1026,7 @@
 
       const bankNames = {
         cbe: 'Commercial Bank of Ethiopia',
+        amhara: 'Amhara Bank',
         telebirr: 'Telebirr',
         dashen: 'Dashen Bank',
         awash: 'Awash Bank',
@@ -1047,8 +1034,7 @@
         zemen: 'Zemen Bank',
         cbebirr: 'CBE Birr',
         mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank',
-        kaafiebirr: 'KaafieBirr'
+        siinqee: 'Siinqee Bank'
       };
       const bankKey = document.getElementById('bankSelect').value;
       document.getElementById('resBankName').textContent = bankNames[bankKey] || 'Bank Payment';
@@ -1072,6 +1058,7 @@
 
       const bankNames = {
         cbe: 'Commercial Bank of Ethiopia',
+        amhara: 'Amhara Bank',
         telebirr: 'Telebirr',
         dashen: 'Dashen Bank',
         awash: 'Awash Bank',
@@ -1079,8 +1066,7 @@
         zemen: 'Zemen Bank',
         cbebirr: 'CBE Birr',
         mpesa: 'M-Pesa Ethiopia',
-        siinqee: 'Siinqee Bank',
-        kaafiebirr: 'KaafieBirr'
+        siinqee: 'Siinqee Bank'
       };
 
       const mockResult = {
