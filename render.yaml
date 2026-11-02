@@ -7,3 +7,9 @@ services:
     envVars:
       - key: PORT
         value: 10000
+      # AI vision extraction (/api/verify/vision). Set OPENROUTER_API_KEY in the Render
+      # dashboard (never commit it). VISION_MODEL can be changed there to swap models.
+      - key: VISION_MODEL
+        value: google/gemini-2.5-flash-lite
+      - key: OPENROUTER_API_KEY
+        sync: false
