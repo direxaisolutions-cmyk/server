@@ -13,3 +13,7 @@ services:
         value: google/gemini-2.5-flash-lite
       - key: OPENROUTER_API_KEY
         sync: false
+      # verify.et bank-verification key. Server-side secret; set in the dashboard, never commit.
+      # Rotating it here is all that's needed - no app rebuild.
+      - key: VERIFY_ET_API_KEY
+        sync: false

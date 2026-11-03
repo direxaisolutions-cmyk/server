@@ -8,7 +8,11 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
 VERIFY_ET_BASE = 'https://verify.et'
-PERMANENT_API_KEY = 'VERIFY_BANK_ET_KMnenH7xt56XIucfTSiWDpU4C4_KGBpjG-tt0Tva3qNzry1ZvBQdrNGoERX4iriM'
+# The verify.et key is a server-side secret, read from the environment (set it in the Render
+# dashboard, never commit it). Rotating the key is now a one-field change here with no app rebuild,
+# because the backend always authenticates to verify.et with THIS key and ignores whatever key a
+# client happens to send (an older app build still ships a stale copy).
+VERIFY_ET_API_KEY = os.environ.get('VERIFY_ET_API_KEY', '')
 
 # --- AI vision extraction (reads the reference off a receipt image) -----------------
 # The Android app POSTs { bank, imageBase64, prompt } to /api/verify/vision when its own
@@ -21,14 +25,11 @@ VISION_MODEL = os.environ.get('VISION_MODEL', 'google/gemini-2.5-flash-lite')
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 
 def get_api_key():
-    api_key = request.headers.get('x-api-key', '')
-    if not api_key:
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer '):
-            api_key = auth_header.split(' ')[1]
-        else:
-            api_key = auth_header
-    return api_key or PERMANENT_API_KEY
+    # Always authenticate to verify.et with the backend's own key. A client-sent x-api-key is NOT
+    # forwarded upstream, so rotating VERIFY_ET_API_KEY here never breaks an installed app that still
+    # carries an old key. Returns '' only when the env var is unset (a misconfiguration), which the
+    # callers turn into a 401/503 rather than silently calling verify.et unauthenticated.
+    return VERIFY_ET_API_KEY
 
 def build_headers(api_key, extra=None):
     headers = {
